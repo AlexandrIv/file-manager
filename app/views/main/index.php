@@ -2,13 +2,13 @@
 	<div class="container-fluid">
 		<div class="card mb-3">
 			<div class="card-header"><?php echo $title; ?></div>
+			<input type="hidden" name="current" class="current_path" value="<?php echo ($current_path) ? $current_path : ''; ?>">
 			<div class="card-body">
 				<div class="row">
 					<div class="col-sm-12 data">
 						<table class="table">
 							<thead>
 								<tr>
-									<th>*</th>
 									<th>Название</th>
 									<th>Размер</th>
 									<th>Тип</th>
@@ -18,7 +18,6 @@
 							<tbody>
 								<?php foreach ($data as $key => $value): ?>
 									<tr>
-										<td><?php if ($key != 0): ?><input type="checkbox" class="copy-input" data-link="<?php echo $value['path_file']; ?>"><?php endif ?></td>
 										<td><?php echo $value['name']; ?></td>
 										<td><?php echo $value['size']; ?></td>
 										<td><?php echo $value['format']; ?></td>

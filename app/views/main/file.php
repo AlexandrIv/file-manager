@@ -10,7 +10,7 @@
 							<form action="/file/save" method="post" id="save">
 								<input type="hidden" name="path" value="<?php echo $file; ?>">
 								<textarea style="width: 100%; height: 600px;" name="content"><?php echo file_get_contents($file); ?></textarea>
-								<button style="width: 100px;" type="submit" class="btn btn-primary btn-block">Сохранить</button>
+								<button style="width: 100px;" type="submit" class="btn btn-primary btn-block" onclick="edit_save()">Сохранить</button>
 							</form>
 						<?php elseif(in_array($format, $image)): ?>
 							<img src="file://<?php echo $file; ?>" alt="">

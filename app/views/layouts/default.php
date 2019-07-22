@@ -8,6 +8,7 @@
     <link href="/public/styles/bootstrap.css" rel="stylesheet">
     <link href="/public/styles/default.css" rel="stylesheet">
     <link href="/public/styles/custom.css" rel="stylesheet">
+    <link href="/public/libs/contextMenu/jquery.contextMenu.min.css" rel="stylesheet">
     
     <link href="/public/styles/font-awesome.css" rel="stylesheet">
 
@@ -15,6 +16,12 @@
     <script src="/public/scripts/custom.js"></script>
     <script src="/public/scripts/form.js"></script>
     <script src="/public/scripts/popper.js"></script>
+
+
+    <script src="/public/libs/contextMenu/jquery.contextMenu.min.js"></script>
+    <script src="/public/libs/contextMenu/jquery.ui.position.min.js"></script>
+
+
     <script src="/public/scripts/bootstrap.js"></script>
     
 </head>
@@ -27,20 +34,17 @@
         <div class="collapse navbar-collapse" id="navbarResponsive">
             <ul class="navbar-nav navbar-sidenav" id="exampleAccordion">
                 <li class="nav-item">
-                    <a class="nav-link return" href="<?php echo '/var/www/'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'].'public_html/uploads'; ?>" action="/">
+                    <a class="nav-link return" action="/" href="/">
                         <i class="fa fa-reply" aria-hidden="true"></i>
                         <span>Return</span>
-                    </a>
-                    <a class="nav-link copy" href="#" alt="Copy">
-                        <i class="fa fa-clone" aria-hidden="true"></i>
-                        <span>Copy</span>
                     </a>
                 </li>
             </ul>
         </div>
     </nav>
+
     <div class="content">
-       <?php echo $content; ?>
+        <?php echo $content; ?>
     </div>
     <footer class="sticky-footer">
         <div class="container">
@@ -49,6 +53,6 @@
             </div>
         </div>
     </footer>
-    
+
 </body>
 </html>

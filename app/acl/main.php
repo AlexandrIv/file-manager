@@ -5,10 +5,16 @@ return [
 		'index',
 		'folder',
 		'save',
+		'delete',
+		'past',
+		'test',
 	],
 	'authorize' => [
 		'index',
 		'folder',
 		'save',
+		'delete',
+		'past',
+		'test',
 	],
 ];
