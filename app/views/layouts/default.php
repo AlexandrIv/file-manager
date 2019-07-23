@@ -27,7 +27,7 @@
 </head>
 <body class="fixed-nav sticky-footer bg-dark">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" id="mainNav">
-        <a class="navbar-brand" href="/">Панель Администратора</a>
+        <a class="navbar-brand" href="/">Файловый менеджер</a>
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -37,6 +37,12 @@
                     <a class="nav-link return" action="/" href="/">
                         <i class="fa fa-reply" aria-hidden="true"></i>
                         <span>Return</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/history">
+                        <i class="fa fa-history" aria-hidden="true"></i>
+                        <span>History</span>
                     </a>
                 </li>
             </ul>

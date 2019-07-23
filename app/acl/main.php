@@ -7,7 +7,8 @@ return [
 		'save',
 		'delete',
 		'past',
-		'test',
+		'history',
+		'new',
 	],
 	'authorize' => [
 		'index',
@@ -15,6 +16,7 @@ return [
 		'save',
 		'delete',
 		'past',
-		'test',
+		'history',
+		'new',
 	],
 ];

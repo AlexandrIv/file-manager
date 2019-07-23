@@ -3,13 +3,13 @@
 namespace app\controllers;
 
 use app\core\Controller;
+use app\lib\Pagination;
 
 /**
  * Main Controller
  */
 class MainController extends Controller
 {
-
 
 	public function __construct($route)
 	{
@@ -102,7 +102,7 @@ class MainController extends Controller
 		$files = scandir($path, 1);
 		$data = [];
 		foreach ($files as $key => $val) {
-			if($val != "." && pathinfo($val, PATHINFO_EXTENSION) != "DS_Store") {
+			if($val != "." && pathinfo($val, PATHINFO_EXTENSION) != "DS_Store" && $val != "..") {
 				if (empty(pathinfo($val, PATHINFO_EXTENSION))) {
 					$data[$key]['name'] = '<a class="folder context" action="/" href="'.$path.'/'.$val.'">'.$val.'</a>';
 					$data[$key]['size'] = count(glob($path.'/'.$val.'/*'));
@@ -128,6 +128,7 @@ class MainController extends Controller
 		$path = $_POST['path'];
 		$content = $_POST['content'];
 		$status = file_put_contents($path, $content);
+		$this->setHistoryData('save', $_POST['path']);
 		echo $status;
 	}
 
@@ -135,9 +136,41 @@ class MainController extends Controller
 	public function deleteAction()
 	{
 		if (!empty($_POST['href'])) {
-			$status = unlink($_POST['href']);
+			if (is_dir($_POST['href']) && file_exists($_POST['href'])){
+				$status = $this->unlinkRecursive($_POST['href'], 0777);
+				$this->setHistoryData('delete', $_POST['href']);
+			} else {
+				$status = unlink($_POST['href']);
+				$this->setHistoryData('delete', $_POST['href']);
+			}
 			echo $status;
 		}
+	}
+
+	function unlinkRecursive($dir, $deleteRootToo)
+	{
+		if(!$dh = @opendir($dir))
+		{
+			return;
+		}
+		while (false !== ($obj = readdir($dh)))
+		{
+			if($obj == '.' || $obj == '..')
+			{
+				continue;
+			}
+
+			if (!@unlink($dir . '/' . $obj))
+			{
+				unlinkRecursive($dir.'/'.$obj, true);
+			}
+		}
+		if ($deleteRootToo)
+		{
+			@rmdir($dir);
+		}
+
+		return true;
 	}
 
 
@@ -146,52 +179,154 @@ class MainController extends Controller
 		if (!empty($_POST['copy_href']) && !empty($_POST['past_href']) && !empty($_POST['type'])) {
 			$file = basename($_POST['copy_href']);
 			if(is_dir($_POST['copy_href'])) {
-				$this->copyFiles($_POST['copy_href'], $_POST['past_href']);
+				$this->copyFolder($_POST['copy_href'], $_POST['past_href']);
+				$this->setHistoryData('copy-past', $_POST['copy_href']);
 				$status = true;
 			} else {
 				$status = copy($_POST['copy_href'], $_POST['past_href'].'/'.$file);
+				$this->setHistoryData('copy-past', $_POST['copy_href']);
 			}
 			if($_POST['type'] == 'cut') {
 				unlink($_POST['copy_href']);
 			}
 			echo $status;
-			echo true;
 		}
 	}
 
 
-	public function copyFiles($olddirname, $newdirname){
-		// если пути для копирования не существует - создаем его
-		if (!is_dir($newdirname) && !file_exists($newdirname)){
-			mkdir($newdirname,0777,true);
+	public function copyFolder($olddirname, $newdirname){
+		$path = explode('/', $olddirname);
+		$folder = array_pop($path);
+		$folderDir = $newdirname.'/'.$folder;
+		if (!is_dir($folderDir) && !file_exists($folderDir)){
+			chmod($newdirname, 0755);
+			mkdir($folderDir, 0777, true);
 		}
-            // Открываем директорию
 		$dir = opendir($olddirname);
-            // В цикле выводим её содержимое
 		while (($file = readdir($dir)) !== false){
-                // Если это файл - копируем его
 			if(is_file($olddirname."/".$file)){
-				copy($olddirname."/".$file, $newdirname."/".$file);
+				copy($olddirname."/".$file, $folderDir."/".$file);
 			}
-                // Если это директория - создаём её
 			if(is_dir($olddirname."/".$file) && $file != "." && $file != ".."){
-                    // Создаём директорию
 				if (!is_dir($newdirname."/".$file) && !file_exists($newdirname."/".$file)){
 					mkdir($newdirname."/".$file);
 				}
-                    // Вызываем рекурсивно функцию copyFiles
 				$this->copyFiles("$olddirname/$file", "$newdirname/$file");
 			}
 		}
-            // Закрываем директорию
 		closedir($dir);
 	}
 
+	public function newAction()
+	{
+		if (!empty($_POST)) {
+			if($_POST['type'] === 'file') {
+				chmod($_POST['path'], 0777);
+				$path = $_POST['path'];
+				chmod($path, 0777);
+				$file_path = $path.'/'.$_POST['name'].'.txt';
+				fopen($file_path, 'w');
+				$this->setHistoryData('new_'.$_POST['type'], $file_path);
+				$status = true;
+			} else if( $_POST['type'] === 'folder' ) {
 
-	public function testAction() {
-		mkdir('/var/www/file-manager/public_html/uploads/dir', 0777, true);
+				chmod($_POST['path'], 0777);
+				$path = $_POST['path'];
+				chmod($path, 0777);
+				$folder_path = $path.'/'.$_POST['name'];
+				$status = mkdir($folder_path, 0777, true);
+				chmod($path, 0777);
+
+				$this->setHistoryData('new_'.$_POST['type'], $folder_path);
+			} else {
+				debug($_POST);
+			}
+			echo $status;
+		}
 	}
 
+
+
+
+
+
+
+
+	public function historyAction()
+	{
+		$count_per_page = 20;
+		$pagination = new Pagination($this->route, $this->model->historyCount(), $count_per_page);
+		$data = $this->model->getHistoryDb($this->route, $count_per_page);
+		$vars = [
+			'data' => $data,
+			'pagination' => $pagination->get(),
+		];
+		$this->view->render('История', $vars);
+	}
+
+	public function setHistoryData($event, $path, $data = false)
+	{
+	
+		$date = $date ?? date("Y-m-d H:i:s");
+		$pathEx = explode('/', $path);
+		$elem = array_pop($pathEx);
+		if (is_dir($path)){
+			$type = 'folder';
+		} else {
+			$type = 'file';
+		}
+		$eventVal = [];
+		if(!empty($event)) {
+			switch ($event) {
+				case 'edit':
+				$eventVal['text'] = 'Changed(edit)'.' '.$type.' '.'"'.$elem.'"'.' in';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				case 'cut':
+				$eventVal['text'] = 'Cut out'.' '.$type.' '.'"'.$elem.'"';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				case 'copy-past':
+				$eventVal['text'] = 'Copied'.' '.$type.' '.'"'.$elem.'"';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				case 'delete':
+				$eventVal['text'] = 'Deleted'.' '.$type.' '.'"'.$elem.'"';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				case 'save':
+				$eventVal['text'] = 'Edited'.' '.$type.' '.'"'.$elem.'"';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				case 'new_folder':
+				$eventVal['text'] = 'New '.$type.' created'.' '.'"'.$elem.'"';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				case 'new_file':
+				$eventVal['text'] = 'New - '.$type.' created'.' '.'"'.$elem.'"';
+				$eventVal['date'] = $date;
+				$eventVal['elem_name'] = $elem;
+				$eventVal['path'] = $path;
+				break;
+				default:
+				# code...
+				break;
+			}
+		}
+		$this->model->setHistoryDb($eventVal, $event, $type, $date);
+	}
 
 
 

@@ -5,3 +5,29 @@
 .show {
 	display: block;
 }
+
+
+.elements tr .add-new-box {
+	position: relative;
+	display: -webkit-flex;
+	display: -moz-flex;
+	display: -ms-flex;
+	display: -o-flex;
+	display: flex;
+	-ms-align-items: center;
+	align-items: center;
+	justify-content: center;
+}
+
+.elements tr .add-new-box .new_btn_folder, .new_btn_file {
+	position: absolute;
+	right: 0;
+	padding: .25rem .8rem;
+    font-size: .875rem;
+    line-height: 1.5;
+    border: 1px solid rgba(0,0,0,.15);
+	color: #fff;
+	text-decoration: none;
+	background-color: #007bff;
+
+}

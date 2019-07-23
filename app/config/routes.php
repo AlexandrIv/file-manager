@@ -22,9 +22,25 @@ return [
 		'action'		=> 'save',
 	],
 
+	'history' => [
+		'controller' 	=> 'main',
+		'action'		=> 'history',
+	],
+
+	'main/history/{page:\d+}' => [
+		'controller' 	=> 'main',
+		'action'		=> 'history',
+	],
+
 	'test' => [
 		'controller' 	=> 'main',
 		'action'		=> 'test',
+	],
+
+
+	'new' => [
+		'controller' 	=> 'main',
+		'action'		=> 'new',
 	],
 
 ];

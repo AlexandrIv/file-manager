@@ -115,6 +115,12 @@ jQuery(document).ready(function () {
 					case 'delete':
 					delet(options);
 					break;
+					case 'new_folder':
+					new_folder(options);
+					break;
+					case 'new_file':
+					new_file(options);
+					break;
 					default:
 					return 'context-menu-icon context-menu-icon-quit';
 				}
@@ -125,6 +131,8 @@ jQuery(document).ready(function () {
 				copy: {name: "Copy", icon: "copy"},
 				"paste": {name: "Paste", icon: "paste"},
 				"delete": {name: "Delete", icon: "delete"},
+				"new_folder": {name: "New folder", icon: "fa-folder-open-o"},
+				"new_file": {name: "New file.txt", icon: "fa-file-o"},
 				"sep1": "---------",
 				"quit": {name: "Quit", icon: function(){
 					return 'context-menu-icon context-menu-icon-quit';
@@ -140,7 +148,8 @@ jQuery(document).ready(function () {
 			type: 'POST',
 			url: $(this).attr('action'),
 			data: {
-				'file' : file,
+				'path' : file,
+				'type' : 'file',
 			},
 			success: function(result) {
 				$('.content').html(result);
@@ -150,14 +159,12 @@ jQuery(document).ready(function () {
 
 	function cut(options) {
 		copy_href = options.$trigger.attr("href");
-		console.log(copy_href);
 		localStorage.setItem('copy_href', copy_href);
 		localStorage.setItem('type', 'cut');
 	}
 
 	function copy(options) {
 		copy_href = options.$trigger.attr("href");
-		console.log(copy_href);
 		localStorage.setItem('copy_href', copy_href);
 		localStorage.setItem('type', 'copy');
 	}
@@ -166,8 +173,6 @@ jQuery(document).ready(function () {
 		var type = localStorage.getItem('type');
 		var copy_href = localStorage.getItem('copy_href');
 		var past_href = global_path;
-		console.log(copy_href);
-		console.log(past_href);
 		$.ajax({
 			type: 'POST',
 			url: '/past',
@@ -199,7 +204,10 @@ jQuery(document).ready(function () {
 	}
 
 	function delet(options) {
-		href = options.$trigger.attr("href");
+		var href = options.$trigger.attr("href");
+		var path = href.split('/');
+		path.pop();
+		path = path.join('/');
 		$.ajax({
 			type: 'POST',
 			url: '/delete',
@@ -207,13 +215,13 @@ jQuery(document).ready(function () {
 				'href' : href,
 			},
 			success: function(status) {
-				console.log(status);
+				//console.log(status);
 				if(status) {
 					$.ajax({
 						type: 'POST',
 						url: $(this).attr('action'),
 						data: {
-							'path' : global_path,
+							'path' : path,
 							'type': 'folder',
 						},
 						success: function(result) {
@@ -225,6 +233,94 @@ jQuery(document).ready(function () {
 				}
 			},
 		});
+	}
+
+
+	function new_folder(options) {
+		var href = options.$trigger.attr("href");
+		add_input(href, 'folder');
+	}
+
+
+	jQuery(document).on('click', '.new_btn_folder', function(e) {
+		e.preventDefault();
+		var path = $(this).attr('href').split('/');
+		path.pop();
+		path = path.join('/');
+		var name = $('.new-name').val();
+		var type = $(this).attr('data-type');
+		$.ajax({
+			type: 'POST',
+			url: '/new',
+			data: {
+				'path' : path,
+				'name': name,
+				'type': type,
+			},
+			success: function(status) {
+				if(status) {
+					$.ajax({
+						type: 'POST',
+						url: $(this).attr('action'),
+						data: {
+							'path' : path,
+							'type': 'folder',
+						},
+						success: function(result) {
+							$('.content').html(result);
+						},
+					});
+				} else {
+					alert('Не удалось удалить фаил!');
+				}
+			},
+		});
+	});
+
+	function new_file(options) {
+		var href = options.$trigger.attr("href");
+		add_input(href, 'file');
+	}
+
+
+	jQuery(document).on('click', '.new_btn_file', function(e) {
+		e.preventDefault();
+		var path = $(this).attr('href').split('/');
+		path.pop();
+		path = path.join('/');
+		var name = $('.new-name').val();
+		var type = $(this).attr('data-type');
+		$.ajax({
+			type: 'POST',
+			url: '/new',
+			data: {
+				'path' : path,
+				'name': name,
+				'type': type,
+			},
+			success: function(status) {
+				if(status) {
+					$.ajax({
+						type: 'POST',
+						url: $(this).attr('action'),
+						data: {
+							'path' : path,
+							'type': 'folder',
+						},
+						success: function(result) {
+							$('.content').html(result);
+						},
+					});
+				} else {
+					alert('Не удалось удалить фаил!');
+				}
+			},
+		});
+	});
+
+
+	function add_input(href, type) {
+		$('.elements').prepend('<tr><td class="add-new-box"><input type="text" class="form-control form-control-sm new-name"/><a href="'+href+'" data-type="'+type+'" class="new_btn_'+type+'">+</a></td></tr>');
 	}
 
 });

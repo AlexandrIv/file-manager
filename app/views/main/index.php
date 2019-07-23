@@ -15,7 +15,7 @@
 									<th>Дата изменения</th>
 								</tr>
 							</thead>
-							<tbody>
+							<tbody class="elements">
 								<?php foreach ($data as $key => $value): ?>
 									<tr>
 										<td><?php echo $value['name']; ?></td>

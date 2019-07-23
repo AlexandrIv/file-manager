@@ -4,16 +4,14 @@ namespace app\lib;
 
 use PDO;
 
-/**
- * DB - PDO
- */
-class Db
+class DB
 {
-	
-	function __construct()
+	protected $db;
+
+	public function __construct()
 	{
 		$config = require 'app/config/db.php';
-		$this->db = new PDO('mysql:host='.$config['host'].';dbnmae='.$config['name'].'', $config['user'], $config['password']);
+		$this->db = new PDO( 'mysql:host='.$config['host'].';dbname='.$config['name'].';', $config['user'], $config['password'] );
 	}
 
 	public function query($sql, $params = [])
@@ -21,7 +19,7 @@ class Db
 		$stmt = $this->db->prepare($sql);
 		if (!empty($params)) {
 			foreach ($params as $key => $val) {
-				if(is_int($val)) {
+				if (is_int($val)) {
 					$type = PDO::PARAM_INT;
 				} else {
 					$type = PDO::PARAM_STR;
@@ -30,23 +28,22 @@ class Db
 			}
 		}
 		$stmt->execute();
-		return $stms;
+		return $stmt;
 	}
 
-	public function row($sql, $params = [])
+	public function row( $sql, $params = [] )
 	{
-		$result = $this->query($sql, $params);
-		return $result->fetchALL(PDO::FETCH_ASSOC);
+		$result = $this->query( $sql, $params );
+		return $result->fetchAll( PDO::FETCH_ASSOC );
 	}
 
-	public function column($sql, $params = [])
+	public function column( $sql, $params = [] )
 	{
-		$result = $this->query($sql, $params);
+		$result = $this->query( $sql, $params );
 		return $result->fetchColumn();
 	}
-
-	public function lastInsertId()
-	{
+	
+	public function lastInsertId() {
 		return $this->db->lastInsertId();
 	}
 	
